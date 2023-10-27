@@ -204,17 +204,17 @@ validateTotalCollateral ::
 validateTotalCollateral pp txBody utxoCollateral =
   sequenceA_
     [ -- Part 3: (∀(a,_,_) ∈ range (collateral txb ◁ utxo), a ∈ Addrvkey)
-      fromAlonzoValidation $ Alonzo.validateScriptsNotPaidUTxO utxoCollateral
-    , -- Part 4: isAdaOnly balance
+      -- NOTE: Allow collateral comming from a script owned UTxO as long as the balance is enough
+      -- fromAlonzoValidation $ Alonzo.validateScriptsNotPaidUTxO utxoCollateral
+      -- Part 4: isAdaOnly balance
       fromAlonzoValidation $
         validateCollateralContainsNonADA txBody utxoCollateral
     , -- Part 5: balance ≥ ⌈txfee txb ∗ (collateralPercent pp) / 100⌉
       fromAlonzoValidation $ Alonzo.validateInsufficientCollateral pp txBody bal
     , -- Part 6: (txcoll tx ≠ ◇) ⇒ balance = txcoll tx
       validateCollateralEqBalance bal (txBody ^. totalCollateralTxBodyL)
-    -- NOTE: Allow no collateral inputs as long as the balance is enough
-    -- , -- Part 7: collInputs tx ≠ ∅
-    -- fromAlonzoValidation $ failureIf (null utxoCollateral) (NoCollateralInputs @era)
+    , -- Part 7: collInputs tx ≠ ∅
+      fromAlonzoValidation $ failureIf (null utxoCollateral) (NoCollateralInputs @era)
     ]
   where
     bal = collAdaBalance txBody utxoCollateral
