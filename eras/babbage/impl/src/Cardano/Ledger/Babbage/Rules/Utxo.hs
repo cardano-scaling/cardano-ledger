@@ -212,8 +212,9 @@ validateTotalCollateral pp txBody utxoCollateral =
       fromAlonzoValidation $ Alonzo.validateInsufficientCollateral pp txBody bal
     , -- Part 6: (txcoll tx ≠ ◇) ⇒ balance = txcoll tx
       validateCollateralEqBalance bal (txBody ^. totalCollateralTxBodyL)
-    , -- Part 7: collInputs tx ≠ ∅
-      fromAlonzoValidation $ failureIf (null utxoCollateral) (NoCollateralInputs @era)
+    -- NOTE: Allow no collateral inputs as long as the balance is enough
+    -- , -- Part 7: collInputs tx ≠ ∅
+    -- fromAlonzoValidation $ failureIf (null utxoCollateral) (NoCollateralInputs @era)
     ]
   where
     bal = collAdaBalance txBody utxoCollateral
